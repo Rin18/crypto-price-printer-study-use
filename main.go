@@ -18,7 +18,7 @@ func get_response(endpoint string) (string, error) {
 	defer resp.Body.Close()
 	//check error
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("Status error:", resp.Status)
+		return "", fmt.Errorf("Status error: %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -31,10 +31,11 @@ func get_response(endpoint string) (string, error) {
 }
 
 func main() {
-	response, err := get_response("/fapi/v1/ping")
+	response, err := get_response("/fapi/v1/premiumIndex")
 	//check error
 	if err != nil {
 		fmt.Println("Request failed, error:", err)
+	} else {
+		fmt.Println(response)
 	}
-	fmt.Println(response)
 }
