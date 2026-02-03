@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Ticker struct {
@@ -37,7 +38,10 @@ func get_response(endpoint string, params map[string]string) ([]byte, error) {
 		}
 	}
 
-	resp, err := http.Get(fullURL)
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
+	resp, err := client.Get(fullURL)
 	// check error
 	if err != nil {
 		return nil, err
