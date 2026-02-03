@@ -4,11 +4,29 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
-func get_response(endpoint string) (string, error) {
+func get_response(endpoint string, params map[string]string) (string, error) {
 	baseURL := "https://fapi.binance.com"
-	fullURL := baseURL + endpoint
+	primaryURL := baseURL + endpoint
+	var fullURL string
+	if params == nil {
+		fullURL = primaryURL
+	} else {
+		u, err := url.Parse(primaryURL)
+		if err != nil {
+			return "", err
+		} else {
+			q := u.Query()
+			for key, value := range params {
+				q.Add(key, value)
+			}
+			u.RawQuery = q.Encode()
+			fullURL = u.String()
+		}
+	}
+
 	resp, err := http.Get(fullURL)
 	// check error
 	if err != nil {
@@ -31,7 +49,7 @@ func get_response(endpoint string) (string, error) {
 }
 
 func main() {
-	response, err := get_response("/fapi/v1/premiumIndex")
+	response, err := get_response("/fapi/v1/premiumIndex", nil)
 	//check error
 	if err != nil {
 		fmt.Println("Request failed, error:", err)
