@@ -11,6 +11,7 @@ func get_response(endpoint string, params map[string]string) (string, error) {
 	baseURL := "https://fapi.binance.com"
 	primaryURL := baseURL + endpoint
 	var fullURL string
+	// process with URL query parameters
 	if params == nil {
 		fullURL = primaryURL
 	} else {
