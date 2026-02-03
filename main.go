@@ -1,13 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 )
 
-func get_response(endpoint string, params map[string]string) (string, error) {
+type Ticker struct {
+	Symbol string `json:"symbol"`
+	Price  string `json:"markPrice"`
+	Time   int64  `json:"time"`
+}
+
+var userTicker Ticker
+
+func get_response(endpoint string, params map[string]string) ([]byte, error) {
 	baseURL := "https://fapi.binance.com"
 	primaryURL := baseURL + endpoint
 	var fullURL string
@@ -17,7 +26,7 @@ func get_response(endpoint string, params map[string]string) (string, error) {
 	} else {
 		u, err := url.Parse(primaryURL)
 		if err != nil {
-			return "", err
+			return nil, err
 		} else {
 			q := u.Query()
 			for key, value := range params {
@@ -31,30 +40,35 @@ func get_response(endpoint string, params map[string]string) (string, error) {
 	resp, err := http.Get(fullURL)
 	// check error
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	//close connection
 	defer resp.Body.Close()
 	//check error
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("Status error: %s", resp.Status)
+		return nil, fmt.Errorf("Status error: %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	//check error
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(body), err
+	return body, err
 }
 
 func main() {
-	response, err := get_response("/fapi/v1/premiumIndex", nil)
+	response, err := get_response("/fapi/v1/premiumIndex", map[string]string{"symbol": "BTCUSDT"})
 	//check error
 	if err != nil {
 		fmt.Println("Request failed, error:", err)
 	} else {
-		fmt.Println(response)
+		err := json.Unmarshal(response, &userTicker)
+		if err != nil {
+			fmt.Println("unmarshal failed, error:", err)
+		} else {
+			fmt.Println(userTicker)
+		}
 	}
 }
